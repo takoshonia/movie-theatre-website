@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { get } from "../api/client";
+import Modal from "../components/Modal";
 import { rememberMovie } from "../lib/recentlyViewed";
 
 export default function MoviePage() {
   const { slug } = useParams();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sessionId = searchParams.get("session");
+  const session = location.state?.session;
+  const [seatsOpen, setSeatsOpen] = useState(Boolean(sessionId));
   const [movie, setMovie] = useState(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
@@ -33,6 +39,17 @@ export default function MoviePage() {
     };
   }, [slug, attempt]);
 
+  useEffect(() => {
+    setSeatsOpen(Boolean(sessionId));
+  }, [sessionId]);
+
+  function closeSeats() {
+    setSeatsOpen(false);
+    const next = new URLSearchParams(searchParams);
+    next.delete("session");
+    setSearchParams(next, { replace: true });
+  }
+
   if (status === "loading") return <p className="page-message">Loading...</p>;
   if (status === "error") {
     return (
@@ -49,6 +66,16 @@ export default function MoviePage() {
     <section className="page-message">
       <h1>{movie.title}</h1>
       <p>Film details will go here.</p>
+      <Modal open={seatsOpen} title="Select seats" onClose={closeSeats}>
+        {session ? (
+          <p>
+            {session.time} · {session.venue?.name}
+            {session.hall?.name ? ` · Hall ${session.hall.name}` : ""} · ₾{session.price}
+          </p>
+        ) : (
+          <p>Choose seats for this showing.</p>
+        )}
+      </Modal>
     </section>
   );
 }

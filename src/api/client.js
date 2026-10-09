@@ -24,7 +24,7 @@ function notifySessionExpired() {
   sessionExpiredListeners.forEach((listener) => listener());
 }
 
-async function request(path, { method = "GET", body, isLogin = false, skipSessionExpired = false } = {}) {
+async function request(path, { method = "GET", body, isLogin = false, skipSessionExpired = false, includeMeta = false } = {}) {
   const headers = { Accept: "application/json" }; // set the accept header to application/json
   const isFormData = body instanceof FormData;
 
@@ -50,6 +50,7 @@ async function request(path, { method = "GET", body, isLogin = false, skipSessio
   const payload = await response.json().catch(() => ({})); // parse the response body as JSON
 
   if (response.ok) { // 200 OK - return the data
+    if (includeMeta) return { data: payload.data, meta: payload.meta ?? null };
     return payload.data;
   }
 

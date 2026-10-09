@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import durationIcon from "../assets/duration.png";
+import ticketIcon from "../assets/ticket.png";
 
 function formatPremiere(value) {
   if (!value) return "";
@@ -34,14 +36,17 @@ export default function Hero({ movies }) {
         <img className="hero-backdrop" src={movie.backdropUrl || movie.posterUrl} alt="" />
         <div className="hero-copy">
           {movie.releaseDate ? (
-            <p className="eyebrow">Premiere · {formatPremiere(movie.releaseDate)}</p>
+            <p className="eyebrow">Premiere · Week of {formatPremiere(movie.releaseDate)}</p>
           ) : null}
           <h1>{movie.title}</h1>
           <p className="hero-meta">
             <span className="chip" title={movie.ageRating?.description}>
               {movie.ageRating?.code}
             </span>
-            <span className="chip">{movie.runtimeMinutes} Min</span>
+            <span className="chip chip-duration">
+              <img src={durationIcon} width="14" height="14" alt="" />
+              {movie.runtimeMinutes} Min
+            </span>
             {movie.formats?.slice(0, 2).map((format) => (
               <span className="chip" key={format.id}>
                 {format.name}
@@ -50,7 +55,8 @@ export default function Hero({ movies }) {
           </p>
           <p className="hero-synopsis">{movie.synopsis}</p>
           <div className="hero-actions">
-            <Link className="pill pill-solid" to={`/movies/${movie.slug}`}>
+            <Link className="pill pill-solid hero-buy" to={`/movies/${movie.slug}`}>
+              <img src={ticketIcon} width="16" height="16" alt="" />
               Buy tickets
             </Link>
             <Link className="pill pill-muted" to="/sessions">
