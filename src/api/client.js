@@ -24,7 +24,7 @@ function notifySessionExpired() {
   sessionExpiredListeners.forEach((listener) => listener());
 }
 
-async function request(path, { method = "GET", body, isLogin = false, skipSessionExpired = false, includeMeta = false } = {}) {
+async function request(path, { method = "GET", body, isLogin = false, anonymous = false, skipSessionExpired = false, includeMeta = false } = {}) {
   const headers = { Accept: "application/json" }; // set the accept header to application/json
   const isFormData = body instanceof FormData;
 
@@ -32,7 +32,7 @@ async function request(path, { method = "GET", body, isLogin = false, skipSessio
     headers["Content-Type"] = "application/json";
   }
 
-  const token = getToken();
+  const token = anonymous ? null : getToken();
   if (token) { // if token is present, add it to the headers
     headers.Authorization = `Bearer ${token}`;
   }
@@ -57,7 +57,7 @@ async function request(path, { method = "GET", body, isLogin = false, skipSessio
   const error = new Error(payload.message || "Request failed"); // 500 Internal Server Error - carries message from server
   error.status = response.status;
 
-  if (response.status === 401 && !isLogin) { // 401 Unauthorized - set token to null and notify session expired
+  if (response.status === 401 && !isLogin && !anonymous) { // 401 Unauthorized - set token to null and notify session expired
     setToken(null);
     if (!skipSessionExpired) {
       notifySessionExpired();

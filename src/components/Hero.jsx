@@ -1,29 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import durationIcon from "../assets/duration.png";
-import ticketIcon from "../assets/ticket.png";
-
-function formatPremiere(value) {
-  if (!value) return "";
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day)
-    .toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-    .toUpperCase();
-}
 
 export default function Hero({ movies }) {
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const movie = movies[index];
 
   useEffect(() => {
-    if (movies.length < 2) return undefined;
+    if (movies.length < 2 || paused) return undefined;
     const timer = setInterval(() => {
       setIndex((current) => (current + 1) % movies.length);
-    }, 5000);
+    }, 6500);
     return () => clearInterval(timer);
-  }, [movies.length]);
+  }, [movies.length, paused]);
 
-  if (!movie) return <p className="empty-copy">No featured films right now.</p>;
+  if (!movie) return <p className="empty">No featured films right now.</p>;
 
   function show(nextIndex) {
     const total = movies.length;
@@ -31,57 +22,84 @@ export default function Hero({ movies }) {
   }
 
   return (
-    <section className="hero" aria-label="Featured films">
-      <div className="hero-stage" key={movie.id}>
-        <img className="hero-backdrop" src={movie.backdropUrl || movie.posterUrl} alt="" />
-        <div className="hero-copy">
-          {movie.releaseDate ? (
-            <p className="eyebrow">Premiere · Week of {formatPremiere(movie.releaseDate)}</p>
-          ) : null}
-          <h1>{movie.title}</h1>
-          <p className="hero-meta">
-            <span className="chip" title={movie.ageRating?.description}>
-              {movie.ageRating?.code}
+    <section
+      className="hero"
+      aria-label="Featured films"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="hero-image" key={movie.id} style={{ backgroundImage: `url("${movie.backdropUrl || movie.posterUrl}")` }} />
+      <div className="hero-shade" />
+      <div className="hero-content container" key={`text-${movie.id}`}>
+        <p className="eyebrow">On the big screen · A special cinema story</p>
+        <h1>{movie.title}</h1>
+        <div className="meta">
+          <span className="age" title={movie.ageRating?.description}>
+            {movie.ageRating?.code}
+          </span>
+          <span>
+            <ClockIcon />
+            {movie.runtimeMinutes} min
+          </span>
+          {movie.formats?.map((format) => (
+            <span className="badge" key={format.id}>
+              {format.name}
             </span>
-            <span className="chip chip-duration">
-              <img src={durationIcon} width="14" height="14" alt="" />
-              {movie.runtimeMinutes} Min
-            </span>
-            {movie.formats?.slice(0, 2).map((format) => (
-              <span className="chip" key={format.id}>
-                {format.name}
-              </span>
-            ))}
-          </p>
-          <p className="hero-synopsis">{movie.synopsis}</p>
-          <div className="hero-actions">
-            <Link className="pill pill-solid hero-buy" to={`/movies/${movie.slug}`}>
-              <img src={ticketIcon} width="16" height="16" alt="" />
-              Buy tickets
-            </Link>
-            <Link className="pill pill-muted" to="/sessions">
-              All sessions
-            </Link>
-          </div>
+          ))}
         </div>
+        <p className="synopsis">{movie.synopsis}</p>
+        <div className="hero-actions">
+          <Link className="btn primary" to={`/movies/${movie.slug}`}>
+            <TicketIcon />
+            Buy tickets
+          </Link>
+          <Link className="btn secondary" to="/sessions">
+            All sessions
+          </Link>
+        </div>
+      </div>
+      <div className="hero-controls container">
         <div className="hero-progress">
           {movies.map((item, itemIndex) => (
             <button
               type="button"
               key={item.id}
-              className={itemIndex === index ? "progress-segment is-active" : "progress-segment"}
-              aria-label={item.title}
+              className={itemIndex === index ? "active" : ""}
+              aria-label={`${item.title}, slide ${itemIndex + 1}`}
+              aria-pressed={itemIndex === index}
               onClick={() => setIndex(itemIndex)}
-            />
+            >
+              <span />
+            </button>
           ))}
-          <button type="button" className="hero-arrow" aria-label="Previous film" onClick={() => show(index - 1)}>
-            ‹
-          </button>
-          <button type="button" className="hero-arrow" aria-label="Next film" onClick={() => show(index + 1)}>
-            ›
-          </button>
         </div>
+        <button type="button" className="icon-btn" aria-label="Previous film" onClick={() => show(index - 1)}>
+          ‹
+        </button>
+        <button type="button" className="icon-btn" aria-label="Next film" onClick={() => show(index + 1)}>
+          ›
+        </button>
       </div>
     </section>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" aria-hidden="true">
+      <circle cx="7" cy="7" r="5.2" fill="none" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M7 4.2V7l2 1.4" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TicketIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M2.2 4.2h11.6v2.3a1.5 1.5 0 0 0 0 2.8v2.5H2.2V9.3a1.5 1.5 0 0 0 0-2.8V4.2Z"
+      />
+    </svg>
   );
 }

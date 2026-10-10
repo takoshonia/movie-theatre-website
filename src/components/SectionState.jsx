@@ -2,9 +2,9 @@ export default function SectionState({ status, error, onRetry, skeleton, childre
   if (status === "loading") return skeleton;
   if (status === "error") {
     return (
-      <div className="section-error">
+      <div className="error-box">
         <p>{error}</p>
-        <button type="button" onClick={onRetry}>
+        <button type="button" className="btn secondary" onClick={onRetry}>
           Retry
         </button>
       </div>
@@ -14,14 +14,18 @@ export default function SectionState({ status, error, onRetry, skeleton, childre
 }
 
 export function HeroSkeleton() {
-  return <div className="skeleton hero-skeleton" />;
+  return (
+    <section className="hero">
+      <div className="hero-loading skeleton" />
+    </section>
+  );
 }
 
 export function CardRowSkeleton() {
   return (
-    <div className="card-row">
-      {Array.from({ length: 4 }, (_, index) => (
-        <div className="skeleton card-skeleton" key={index} />
+    <div className="skeleton-grid">
+      {Array.from({ length: 6 }, (_, index) => (
+        <div className="skeleton" key={index} />
       ))}
     </div>
   );
