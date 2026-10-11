@@ -68,8 +68,8 @@ async function request(path, { method = "GET", body, isLogin = false, anonymous 
     error.errors = payload.errors;
   }
 
-  if (response.status === 409) { // 409 Conflict - resource already exists throw an error that carries contested
-    error.contested = payload.contested;
+  if (response.status === 409) { // 409 Conflict - contested seats may be top-level or under data
+    error.contested = payload.contested || payload.data?.contested || [];
   }
 
   throw error;

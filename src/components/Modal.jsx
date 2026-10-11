@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export default function Modal({ open, title, onClose, children }) {
+export default function Modal({ open, title, onClose, children, wide = false, plain = false }) {
   useEffect(() => {
     if (!open) return undefined;
 
@@ -26,13 +26,20 @@ export default function Modal({ open, title, onClose, children }) {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <section className="modal" role="dialog" aria-modal="true" aria-label={title}>
-        <div className="modal-head">
-          <h2 id="modal-title">{title}</h2>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
-            ×
-          </button>
-        </div>
+      <section
+        className={plain ? undefined : wide ? "modal modal-wide" : "modal"}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        {plain ? null : (
+          <div className="modal-head">
+            <h2 id="modal-title">{title}</h2>
+            <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
+              ×
+            </button>
+          </div>
+        )}
         {children}
       </section>
     </div>

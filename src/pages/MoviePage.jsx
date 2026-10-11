@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { get, post } from "../api/client";
-import Modal from "../components/Modal";
+import BookingModal from "../components/BookingModal";
 import SectionState from "../components/SectionState";
 import { useApp } from "../context/AppProvider";
 import { rememberMovie } from "../lib/recentlyViewed";
@@ -341,27 +341,13 @@ export default function MoviePage() {
         )}
       </div>
 
-      <Modal open={seatsOpen} title="Buy ticket" onClose={closeSeats}>
-        {session ? (
-          <div className="booking-header">
-            <img src={movie.posterUrl} alt="" />
-            <div>
-              <h3>
-                {movie.title} <span className="age">{movie.ageRating?.code}</span>
-              </h3>
-              <p>
-                {session.venue?.name}
-                {session.hall?.name ? ` · Hall ${session.hall.name}` : ""} · {session.time}
-              </p>
-              <small>
-                {[session.format?.name, session.language?.name].filter(Boolean).join(" · ")} · {session.price} ₾
-              </small>
-            </div>
-          </div>
-        ) : (
-          <p>Choose seats for this showing.</p>
-        )}
-      </Modal>
+      <BookingModal
+        open={seatsOpen}
+        sessionId={sessionId}
+        movie={movie}
+        initialSession={session}
+        onClose={closeSeats}
+      />
     </>
   );
 }
