@@ -202,15 +202,15 @@ export default function BookingModal({ open, sessionId, movie, initialSession, o
     holdRef.current = hold;
     if (!hold) return undefined;
     expiryHandled.current = false;
-    const duration = (options?.holdMinutes ?? 8) * 60;
-    const expiresAt = Date.parse(hold.expiresAt);
-    const startedAt = Date.now();
-    setSeconds(duration);
+
+    const fromRemaining = Number(hold.secondsRemaining);
+    const firstPaint = Number.isFinite(fromRemaining)
+      ? Math.max(0, Math.ceil(fromRemaining))
+      : Math.max(0, Math.ceil((Date.parse(hold.expiresAt) - Date.now()) / 1000));
+    setSeconds(firstPaint);
 
     function tick() {
-      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-      let remaining = Math.max(0, duration - elapsed);
-      if (Number.isFinite(expiresAt) && Date.now() >= expiresAt) remaining = 0;
+      const remaining = Math.max(0, Math.ceil((Date.parse(hold.expiresAt) - Date.now()) / 1000));
       setSeconds(remaining);
       if (remaining === 0 && !expiryHandled.current) {
         expiryHandled.current = true;
@@ -222,10 +222,9 @@ export default function BookingModal({ open, sessionId, movie, initialSession, o
       }
     }
 
-    tick();
     const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, [hold, options?.holdMinutes]);
+  }, [hold]);
 
   async function close() {
     if (lock.current) return;
@@ -295,7 +294,6 @@ export default function BookingModal({ open, sessionId, movie, initialSession, o
       });
       if (result && !closed.current) {
         setHold(result);
-        setSeconds((options?.holdMinutes ?? 8) * 60);
         setStep(2);
       }
     } catch (requestError) {
@@ -310,23 +308,21 @@ export default function BookingModal({ open, sessionId, movie, initialSession, o
     }
   }
 
-  async function back() {
+  function back() {
     if (lock.current || step !== 2) return;
-    lock.current = true;
-    setBusy(true);
-    try {
-      if (hold) {
-        await del(`/holds/${hold.holdId}`);
-        setHold(null);
-      }
-      setStep(1);
-      setMapAttempt((value) => value + 1);
-    } catch (requestError) {
-      setError(requestError.message || "Could not return to seats");
-    } finally {
-      lock.current = false;
-      setBusy(false);
+    setError("");
+    if (hold?.seats?.length) {
+      setSelected(
+        hold.seats.map((seat) => ({
+          id: seat.seatId,
+          code: seat.code,
+          label: String(seat.code || "").replace(/^[A-Za-z]+/, "") || seat.code,
+          ticketType: seat.ticketType?.slug || seat.ticketType,
+        })),
+      );
     }
+    setStep(1);
+    setMapAttempt((value) => value + 1);
   }
 
   function changeCheckout(name, value) {
@@ -492,23 +488,29 @@ export default function BookingModal({ open, sessionId, movie, initialSession, o
                                 <span className="booking-row-label">{row.label}</span>
                                 {row.seats.map((seat) => (
                                   <Fragment key={seat.id}>
-                                    <button
-                                      type="button"
-                                      className={`booking-seat is-${
-                                        selected.some((item) => item.id === seat.id)
-                                          ? "selected"
-                                          : lost.includes(seat.code)
-                                            ? "sold"
-                                            : seat.state
-                                      }`}
-                                      disabled={lost.includes(seat.code) || (seat.state !== "available" && !seat.isMine)}
-                                      onClick={() => select(seat)}
-                                      aria-pressed={selected.some((item) => item.id === seat.id)}
-                                      aria-label={`Seat ${seat.code}`}
-                                      title={seat.code}
-                                    >
-                                      {seat.label}
-                                    </button>
+                                    {seat.state === "unavailable" ? (
+                                      <span className="booking-seat is-unavailable" aria-hidden="true" />
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        className={`booking-seat is-${
+                                          selected.some((item) => item.id === seat.id)
+                                            ? "selected"
+                                            : lost.includes(seat.code)
+                                              ? "sold"
+                                              : seat.isMine
+                                                ? "available"
+                                                : seat.state
+                                        }`}
+                                        disabled={lost.includes(seat.code) || (seat.state !== "available" && !seat.isMine)}
+                                        onClick={() => select(seat)}
+                                        aria-pressed={selected.some((item) => item.id === seat.id)}
+                                        aria-label={`Seat ${seat.code}`}
+                                        title={seat.code}
+                                      >
+                                        {seat.label}
+                                      </button>
+                                    )}
                                     {seat.aisleAfter ? <span className="booking-aisle" /> : null}
                                   </Fragment>
                                 ))}

@@ -1,16 +1,58 @@
-# React + Vite
+# Kino XII
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Cinema booking frontend for the Redberry Bootcamp XII assignment. The UI is in English and talks to the official Kino XII API.
 
-Currently, two official plugins are available:
+**API docs:** [https://api.kinoxii.redberryinternship.ge/docs](https://api.kinoxii.redberryinternship.ge/docs)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What it does
 
-## React Compiler
+- Registration and login modals
+- Home page with featured hero, now playing, coming soon, and recently viewed
+- Sessions page with filters, search, sort, and pagination (filters mirrored in the URL)
+- Movie detail page with sessions by date; notify-me for coming soon titles
+- Two-step booking modal: seat selection → checkout → confirmation
+- Profile page with personal info and My tickets (upcoming / past, refunds)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the Oxlint configuration
+- React 19
+- Vite
+- React Router 7
+- CSS (no UI framework)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`.
+
+## API
+
+Base URL used by the app:
+
+```text
+https://api.kinoxii.redberryinternship.ge/api
+```
+
+Configured in `src/api/client.js`. Authenticated requests send `Authorization: Bearer <token>`.
+
+Catalogue filters, ticket types, max seats per order, and hold duration are loaded from `GET /filter-options`.
+
+**Seeded account from the API docs:**
+
+| Field    | Value               |
+| -------- | ------------------- |
+| Email    | `jane@kinoxii.test` |
+| Password | `password`          |
+
+## Main routes
+
+| Path             | Page            |
+| ---------------- | --------------- |
+| `/`              | Home            |
+| `/sessions`      | Sessions list   |
+| `/movies/:slug`  | Movie details   |
+| `/profile`       | Profile / tickets |

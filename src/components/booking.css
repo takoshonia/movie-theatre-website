@@ -237,12 +237,20 @@
   box-shadow: 0 1px 2px 0 var(--seat-shadow);
 }
 
-.booking-seat.is-sold,
-.booking-seat.is-unavailable {
+.booking-seat.is-sold {
   border-color: transparent;
   background: var(--seat-bg);
   color: rgba(255, 255, 255, 0.22);
   box-shadow: none;
+}
+
+.booking-seat.is-unavailable {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: transparent;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .booking-seat.is-held {
